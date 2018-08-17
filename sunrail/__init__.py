@@ -11,6 +11,7 @@ ATTRIBUTION = 'Information provided by sunrail.com'
 HTTP_POST = 'POST'
 HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}
 DATA = [('action', 'get_station_feed')]
+DIRECTIONS = ['N', 'S']
 STATIONS = {'17': "Debary",
             '2': "Sanford",
             '3': "Lake Mary",
@@ -58,6 +59,7 @@ class SunRail():
                  include_trains=None, exclude_trains=None):
         self.stations = set(STATIONS)
         self.trains = set(NORTHBOUND_TRAINS + SOUTHBOUND_TRAINS)
+        self.data = None
         if include_stations:
             _validate_stations(include_stations)
             self.stations = set(include_stations)
@@ -71,23 +73,54 @@ class SunRail():
             _validate_train_ids(exclude_trains)
             self.trains -= set(exclude_trains)
 
+    def update(self):
+        """Updates the train data."""
+        resp = requests.post(API_URL, headers=HEADERS, data=DATA)
+        resp.raise_for_status()
+        self.data = resp.json()
+
     def get_train_status(self):
         """Gets the train status."""
-        resp = requests.post(API_URL, headers=HEADERS, data=DATA)
         northbound_status = []  # type: List[Dict[str, str]]
         southbound_status = []  # type: List[Dict[str, str]]
-        resp.raise_for_status()
-        data = resp.json()
+        self.update()
+        data = self.data
         # data[0]['Directions'][0]['StopTimes'][0]['TrainId'] == 'P340'
-        stations = [station for station in data if station['Id'] in self.stations]
+        #stations = [station for station in data if station['Id'] in self.stations]
         for station in data: # data[0...n]
-            for direction in station['Directions']: # data[n].directions[N...S]
-                if direction['Direction'] is 'N':
-                    for time in direction['StopTimes']: # data[n].Directions[n].StopTimes[0...n]
+            if station['Id'] in self.stations:
+                for direction in station['Directions']: # data[n].directions[N...S]
+                    if direction['Direction'] is 'N':
+                        for time in direction['StopTimes']: # data[n].Directions[n].StopTimes[0...n]
+                            if time['TrainId'] in self.trains:
+                                row = [STATIONS[station['Id']], 'N', time['TrainId'], time['ArrivalTime']]
+                                northbound_status.append(row)
+                    else: # Direction is S
+                        for time in direction['StopTimes']:
+                            if time['TrainId'] in self.trains:
+                                row = [STATIONS[station['Id']], 'S', time['TrainId'], time['ArrivalTime']]
+                                southbound_status.append(row)
+            return [northbound_status, southbound_status]
+
+    def get_next_train_status(self):
+        """Gets the train status."""
+        northbound_status = []  # type: List[Dict[str, str]]
+        southbound_status = []  # type: List[Dict[str, str]]
+        self.update()
+        data = self.data
+        # data[0]['Directions'][0]['StopTimes'][0]['TrainId'] == 'P340'
+        #stations = [station for station in data if station['Id'] in self.stations]
+        for station in data: # data[0...n]
+            if station['Id'] in self.stations:
+                for direction in station['Directions']: # data[n].directions[N...S]
+                    if direction['Direction'] is 'N':
+                        time = direction['StopTimes'][0] # data[n].Directions[n].StopTimes[0...n]
                         if time['TrainId'] in self.trains:
-                            northbound_status.append(time)
-                else: # Direction is S
-                    for time in direction['StopTimes']:
+                            row = [STATIONS[station['Id']], 'N', time['TrainId'], time['ArrivalTime']]
+                            northbound_status.append(row)
+                    else: # Direction is S
+                        time = direction['StopTimes'][0]
                         if time['TrainId'] in self.trains:
-                            southbound_status.append(time)
-        return trains #[northbound_status, southbound_status]
+                            row = [STATIONS[station['Id']], 'S', time['TrainId'], time['ArrivalTime']]
+                            southbound_status.append(row)
+        return [northbound_status, southbound_status]
