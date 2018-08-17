@@ -51,15 +51,25 @@ def _validate_train_ids(train_ids):
             raise ValueError('Invalid train_id: {}'.format(train_id))
     return True
 
+def _validate_direction(direction):
+    """Validate direction is N or S."""
+    if direction not in DIRECTIONS:
+        raise ValueError("Invalid Direction: Only 'N' or 'S'.")
+    return True
+
 
 class SunRail():
     """SunRail API wrapper."""
 
     def __init__(self, include_stations=None, exclude_stations=None,
-                 include_trains=None, exclude_trains=None):
+                 include_trains=None, exclude_trains=None, direction=None):
         self.stations = set(STATIONS)
         self.trains = set(NORTHBOUND_TRAINS + SOUTHBOUND_TRAINS)
+        self.direction = ['N', 'S']
         self.data = None
+        if direction:
+            _validate_direction(direction)
+            self.direction = [direction]
         if include_stations:
             _validate_stations(include_stations)
             self.stations = set(include_stations)
@@ -79,7 +89,7 @@ class SunRail():
         resp.raise_for_status()
         self.data = resp.json()
 
-    def get_train_status(self):
+    def get_all(self):
         """Gets the train status."""
         northbound_status = []  # type: List[Dict[str, str]]
         southbound_status = []  # type: List[Dict[str, str]]
@@ -90,19 +100,19 @@ class SunRail():
         for station in data: # data[0...n]
             if station['Id'] in self.stations:
                 for direction in station['Directions']: # data[n].directions[N...S]
-                    if direction['Direction'] is 'N':
+                    if direction['Direction'] is 'N' and direction['Direction'] in self.direction:
                         for time in direction['StopTimes']: # data[n].Directions[n].StopTimes[0...n]
                             if time['TrainId'] in self.trains:
-                                row = [STATIONS[station['Id']], 'N', time['TrainId'], time['ArrivalTime']]
+                                row = [station['Name'], 'N', time['TrainId'], time['ArrivalTime']]
                                 northbound_status.append(row)
-                    else: # Direction is S
+                    elif direction['Direction'] in self.direction: # Direction is S
                         for time in direction['StopTimes']:
                             if time['TrainId'] in self.trains:
-                                row = [STATIONS[station['Id']], 'S', time['TrainId'], time['ArrivalTime']]
+                                row = [station['Name'], 'S', time['TrainId'], time['ArrivalTime']]
                                 southbound_status.append(row)
-            return [northbound_status, southbound_status]
+            return {'N':northbound_status, 'S':southbound_status}
 
-    def get_next_train_status(self):
+    def get_next(self):
         """Gets the train status."""
         northbound_status = []  # type: List[Dict[str, str]]
         southbound_status = []  # type: List[Dict[str, str]]
@@ -113,14 +123,14 @@ class SunRail():
         for station in data: # data[0...n]
             if station['Id'] in self.stations:
                 for direction in station['Directions']: # data[n].directions[N...S]
-                    if direction['Direction'] is 'N':
+                    if direction['Direction'] is 'N' and direction['Direction'] in self.direction:
                         time = direction['StopTimes'][0] # data[n].Directions[n].StopTimes[0...n]
                         if time['TrainId'] in self.trains:
-                            row = [STATIONS[station['Id']], 'N', time['TrainId'], time['ArrivalTime']]
+                            row = [station['Name'], 'N', time['TrainId'], time['ArrivalTime']]
                             northbound_status.append(row)
-                    else: # Direction is S
+                    elif direction['Direction'] in self.direction: # Direction is S
                         time = direction['StopTimes'][0]
                         if time['TrainId'] in self.trains:
-                            row = [STATIONS[station['Id']], 'S', time['TrainId'], time['ArrivalTime']]
+                            row = [station['Name'], 'S', time['TrainId'], time['ArrivalTime']]
                             southbound_status.append(row)
-        return [northbound_status, southbound_status]
+        return {'N':northbound_status, 'S':southbound_status}
