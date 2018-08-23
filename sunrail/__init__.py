@@ -68,7 +68,7 @@ class SunRail():
         self.direction = ['N', 'S']
         # data[0]['Directions'][0]['StopTimes'][0]['TrainId'] == 'P340'
         self.data = None
-        self.delays = []
+        self.delays = None
         if direction:
             _validate_direction(direction)
             self.direction = [direction]
@@ -93,13 +93,16 @@ class SunRail():
 
     def get_delays(self):
         """Return any delays for trains w're interested in."""
-
+        if self.delays is None:
+            return None
+        return self.delays
 
     def get_all(self):
         """Gets the train status."""
         northbound_status = []
         southbound_status = []
-        self.update()
+        if self.data is None:
+            return None
         data = self.data
         for station in data:
             if station['Id'] in self.stations:
@@ -108,19 +111,28 @@ class SunRail():
                         direction['Direction'] in self.direction):
                         for time in direction['StopTimes']:
                             if time['TrainId'] in self.trains:
-                                northbound_status.append([station['Name'],
-                                                         time['TrainId'],
-                                                         time['ArrivalTime']])
+                                data = {'station':station['Name'],
+                                     'station_lat':station['Lat'],
+                                     'station_lon':station['Lon'],
+                                     'train_id':time['TrainId'],
+                                     'arrival_time':time['ArrivalTime'],
+                                     'delayed':time['DelayFlag']}
+                                northbound_status.append(data)
                                 if time['DelayFlag'] == true:
-                                    self.delays.append(time['TrainId'])
+                                    self.delays.append(data)
+
                     elif direction['Direction'] in self.direction:
                         for time in direction['StopTimes']:
                             if time['TrainId'] in self.trains:
-                                southbound_status.append([station['Name'],
-                                                         time['TrainId'],
-                                                         time['ArrivalTime']])
+                                data = {'station':station['Name'],
+                                     'station_lat':station['Lat'],
+                                     'station_lon':station['Lon'],
+                                     'train_id':time['TrainId'],
+                                     'arrival_time':time['ArrivalTime'],
+                                     'delayed':time['DelayFlag']}
+                                southbound_status.append(data)
                                 if time['DelayFlag'] == true:
-                                    self.delays.append(time['TrainId'])
+                                    self.delays.append(data)
 
             return {'N':northbound_status, 'S':southbound_status}
 
@@ -128,7 +140,8 @@ class SunRail():
         """Gets the train status."""
         northbound_status = []
         southbound_status = []
-        self.update()
+        if self.data is None:
+            return None
         data = self.data
         for station in data:
             if station['Id'] in self.stations:
@@ -137,18 +150,28 @@ class SunRail():
                         direction['Direction'] in self.direction):
                         time = direction['StopTimes'][0]
                         if time['TrainId'] in self.trains:
-                            northbound_status.append([station['Name'],
-                                                     time['TrainId'],
-                                                     time['ArrivalTime']])
-                            if time['DelayFlag'] == true:
-                                    self.delays.append(time['TrainId'])
+                            data = {'station':station['Name'],
+                                    'station_lat':station['Lat'],
+                                    'station_lon':station['Lon'],
+                                    'train_id':time['TrainId'],
+                                    'arrival_time':time['ArrivalTime'],
+                                    'delayed':time['DelayFlag']}
+                            northbound_status.append(data)
+                            if time['DelayFlag'] == False:
+                                print(
+                                self.delays.append(data)
+
                     elif direction['Direction'] in self.direction:
                         time = direction['StopTimes'][0]
                         if time['TrainId'] in self.trains:
-                            southbound_status.append([station['Name'],
-                                                     time['TrainId'],
-                                                     time['ArrivalTime']])
-                            if time['DelayFlag'] == true:
-                                    self.delays.append(time['TrainId'])
+                            data = {'station':station['Name'],
+                                    'station_lat':station['Lat'],
+                                    'station_lon':station['Lon'],
+                                    'train_id':time['TrainId'],
+                                    'arrival_time':time['ArrivalTime'],
+                                    'delayed':time['DelayFlag']}
+                            southbound_status.append(data)
+                            if time['DelayFlag'] == True:
+                                self.delays.append(data)
 
         return {'N':northbound_status, 'S':southbound_status}

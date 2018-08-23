@@ -1,3 +1,5 @@
 bin/*
 lib/*
 sunrail/__pycache__/*
+include/*
+pyvenv.cfg
