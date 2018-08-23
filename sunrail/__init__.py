@@ -68,7 +68,7 @@ class SunRail():
         self.direction = ['N', 'S']
         # data[0]['Directions'][0]['StopTimes'][0]['TrainId'] == 'P340'
         self.data = None
-        self.delays = None
+        self.delays = []
         if direction:
             _validate_direction(direction)
             self.direction = [direction]
@@ -93,7 +93,7 @@ class SunRail():
 
     def get_delays(self):
         """Return any delays for trains w're interested in."""
-        if self.delays is None:
+        if len(self.delays) == 0:
             return None
         return self.delays
 
@@ -118,7 +118,7 @@ class SunRail():
                                      'arrival_time':time['ArrivalTime'],
                                      'delayed':time['DelayFlag']}
                                 northbound_status.append(data)
-                                if time['DelayFlag'] == true:
+                                if time['DelayFlag'] == True:
                                     self.delays.append(data)
 
                     elif direction['Direction'] in self.direction:
@@ -131,7 +131,7 @@ class SunRail():
                                      'arrival_time':time['ArrivalTime'],
                                      'delayed':time['DelayFlag']}
                                 southbound_status.append(data)
-                                if time['DelayFlag'] == true:
+                                if time['DelayFlag'] == True:
                                     self.delays.append(data)
 
             return {'N':northbound_status, 'S':southbound_status}
@@ -157,8 +157,7 @@ class SunRail():
                                     'arrival_time':time['ArrivalTime'],
                                     'delayed':time['DelayFlag']}
                             northbound_status.append(data)
-                            if time['DelayFlag'] == False:
-                                print(
+                            if time['DelayFlag'] == True:
                                 self.delays.append(data)
 
                     elif direction['Direction'] in self.direction:
