@@ -5,11 +5,14 @@ import requests
 import datetime
 
 
-API_URL = 'http://sunrail.com/wp-admin/admin-ajax.php'
-SUNRAIL_URL = 'https://sunrail.com'
+SUNRAIL_URL = 'http://sunrail.com'
+STATUS_URL = '{}/wp-admin/admin-ajax.php'.format(SUNRAIL_URL)
+TOKEN_URL = '{}/api/tokenizer/get_token/'.format(SUNRAIL_URL)
+ALERT_URL = '{}/api/alerts/get_alerts/'.format(SUNRAIL_URL)
 ATTRIBUTION = 'Information provided by sunrail.com'
 HTTP_POST = 'POST'
-HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}
+#HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}
+HEADERS = {'User-Agent':'Sunrail Python API Wrapper'}
 DATA = [('action', 'get_station_feed')]
 DIRECTIONS = ['N', 'S']
 STATIONS = {'17': "Debary",
@@ -87,9 +90,17 @@ class SunRail():
 
     def update(self):
         """Updates the train data."""
-        resp = requests.post(API_URL, headers=HEADERS, data=DATA)
-        resp.raise_for_status()
-        self.data = resp.json()
+        status = requests.post(STATUS_URL, headers=HEADERS, data=DATA, timeout=10)
+        status.raise_for_status()
+        self.data = status.json()
+
+        request_token = requests.get(TOKEN_URL, headers=HEADERS, timeout=10)
+        request_token.raise_for_status()
+        request_token = token.json()['result']['token']
+
+        request_alerts = requests.get(ALERT_URL, headers=headers, timeout=10)
+        request_alerts.raise_for_status()
+        alerts = request_alerts.json()['status']
 
     def get_delays(self):
         """Return any delays for trains w're interested in."""
