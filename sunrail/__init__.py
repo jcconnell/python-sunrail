@@ -11,7 +11,6 @@ TOKEN_URL = '{}/api/tokenizer/get_token/'.format(SUNRAIL_URL)
 ALERT_URL = '{}/api/alerts/get_alerts/'.format(SUNRAIL_URL)
 ATTRIBUTION = 'Information provided by sunrail.com'
 HTTP_POST = 'POST'
-#HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}
 HEADERS = {'User-Agent':'Sunrail Python API Wrapper'}
 DATA = [('action', 'get_station_feed')]
 DIRECTIONS = ['N', 'S']
