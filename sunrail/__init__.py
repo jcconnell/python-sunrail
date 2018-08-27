@@ -106,7 +106,8 @@ class SunRail():
         request_alerts.raise_for_status()
         if 'result' in request_alerts.json():
             self.alerts = request_alerts.json()['result']
-        self.alerts = []
+        else:
+            self.alerts = []
 
     def get_delays(self):
         """Return any delays for trains we're interested in."""
@@ -119,7 +120,7 @@ class SunRail():
         if len(self.alerts) == 0:
             return None
         for train in self.trains:
-            if train in self.alerts:
+            if train in str(self.alerts):
                 return self.alerts
         return None
 
