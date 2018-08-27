@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='sunrail',
-    version='1.0.0',
+    version='1.0.1',
     description='Provides API wrapper to sunrail.com.',
     url='https://github.com/jcconnell/python-sunrail',
     license='MIT',
