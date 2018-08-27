@@ -72,6 +72,7 @@ class SunRail():
         # data[0]['Directions'][0]['StopTimes'][0]['TrainId'] == 'P340'
         self.data = None
         self.delays = []
+        self.alerts = []
         if direction:
             _validate_direction(direction)
             self.direction = [direction]
@@ -90,23 +91,38 @@ class SunRail():
 
     def update(self):
         """Updates the train data."""
-        status = requests.post(STATUS_URL, headers=HEADERS, data=DATA, timeout=10)
+        status = requests.post(STATUS_URL, headers=HEADERS,
+                               data=DATA, timeout=10)
         status.raise_for_status()
         self.data = status.json()
 
-        request_token = requests.get(TOKEN_URL, headers=HEADERS, timeout=10)
+        request_token = requests.get(TOKEN_URL, headers=HEADERS,
+                                     timeout=10)
         request_token.raise_for_status()
-        request_token = token.json()['result']['token']
+        token = request_token.json()['result']['token']
 
-        request_alerts = requests.get(ALERT_URL, headers=headers, timeout=10)
+        alert_params = {'token':token}
+        request_alerts = requests.get(ALERT_URL, headers=HEADERS,
+                                      params=alert_params, timeout=10)
         request_alerts.raise_for_status()
-        alerts = request_alerts.json()['status']
+        if 'result' in request_alerts.json():
+            self.alerts = request_alerts.json()['result']
+        self.alerts = []
 
     def get_delays(self):
-        """Return any delays for trains w're interested in."""
+        """Return any delays for trains we're interested in."""
         if len(self.delays) == 0:
             return None
         return self.delays
+
+    def get_alerts(self):
+        """Return any alerts for trains we're interested in."""
+        if len(self.alerts) == 0:
+            return None
+        for train in self.trains:
+            if train in self.alerts:
+                return self.alerts
+        return None
 
     def get_all(self):
         """Gets the train status."""

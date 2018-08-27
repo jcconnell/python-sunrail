@@ -67,6 +67,26 @@ SOUTHBOUND_TRAINS = ['P301', 'P303', 'P305', 'P307', 'P309', 'P311', 'P313', 'P3
                      'P325', 'P327', 'P329', 'P331', 'P333', 'P335', 'P337', 'P339'] # Evening
 ```
 
+## Example Alert
+```json
+{
+   "status":"ok",
+   "result":[
+      {
+         "id":6758,
+         "title":"",
+         "message":"Trains P304 is cancelled. All other trains on time.",
+         "enabled":true,
+         "currentdate":"08\/27\/2018 11:52 AM",
+         "link":null
+      }
+   ],
+   "cached":true,
+   "limit":25,
+   "total":1
+}
+```
+
 ## Development
 
 Pull requests welcome.
@@ -74,3 +94,7 @@ Pull requests welcome.
 ## Disclaimer
 
 Not affiliated with sunrail.com. Use at your own risk.
+
+## Notes
+
+See `example_response.json` and `pretty_example_response.json` for an example of the API response.
