@@ -5,7 +5,7 @@ import requests
 import datetime
 
 
-SUNRAIL_URL = 'http://sunrail.com'
+SUNRAIL_URL = 'https://sunrail.com'
 STATUS_URL = '{}/wp-admin/admin-ajax.php'.format(SUNRAIL_URL)
 TOKEN_URL = '{}/api/tokenizer/get_token/'.format(SUNRAIL_URL)
 ALERT_URL = '{}/api/alerts/get_alerts/'.format(SUNRAIL_URL)
